@@ -82,12 +82,12 @@
 <script>
 const $ = id => document.getElementById(id);
 const media = $('media');
-
+const VOLUME_INICIAL = 0.4; // 0 a 1 (0.4 = 40%)
 // ===== CONFIGURAÇÃO =====
 const DEFAULT_KEY = 'AIzaSyBvtFzCMVkNlJfW9fxS71fSAXKpijPEa5c';
 // Cada linha é uma estação. A primeira toca ao abrir o app.
 const STATIONS = [
-  { nome: 'Louvores',  pasta: 'https://drive.google.com/drive/folders/1u794n3TRddzlbdVE3KXQVDCdVBwAYsLM?usp=sharing' },
+  { nome: 'Minha Rádio',  pasta: 'https://drive.google.com/drive/folders/1u794n3TRddzlbdVE3KXQVDCdVBwAYsLM?usp=sharing' },
    { nome: 'Instrumental',  pasta: 'https://drive.google.com/drive/folders/1JnljJZNfULpkqFPiHQhHhNGPUwuGWnpC?usp=sharing' },
   // { nome: 'Clássicas', pasta: 'https://drive.google.com/drive/folders/ID_DA_PASTA_3' },
 ];
@@ -251,6 +251,8 @@ media.ontimeupdate = () => {
 };
 media.onloadedmetadata = () => $('dur').textContent = fmt(media.duration);
 $('seek').oninput = e => { if (media.duration) media.currentTime = (e.target.value / 100) * media.duration; };
+media.volume = VOLUME_INICIAL;
+$('vol').value = VOLUME_INICIAL;
 $('vol').oninput = e => media.volume = e.target.value;
 
 if (AUTO) { buildStations(); loadStation(0); }
