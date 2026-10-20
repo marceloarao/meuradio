@@ -61,7 +61,8 @@
   <div class="card">
     <div id="title">Carregando músicas...</div>
     <div id="hint" class="time" style="margin-bottom:8px"></div>
-    <video id="media" playsinline></video>
+    <audio id="aud" preload="auto"></audio>
+    <video id="vid" playsinline style="display:none"></video>
     <input type="range" id="seek" min="0" max="100" value="0" step="0.1">
     <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
     <div class="row ctrl">
@@ -81,7 +82,8 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const media = $('media');
+const aud = $('aud'), vid = $('vid');
+let media = aud;
 
 // ===== CONFIGURAÇÃO =====
 const VOLUME_INICIAL = 0.35; // 0 a 1 (0.4 = 40%)
@@ -215,15 +217,18 @@ function armAutoStart() {
 
 function playCurrent() {
   const i = order[pos], f = files[i];
+  const isVideo = f.mimeType.startsWith('video/');
+  const target = isVideo ? vid : aud;
+  if (target !== media) { media.pause(); media = target; }
+  vid.style.display = isVideo ? 'block' : 'none';
   media.src = 'https://www.googleapis.com/drive/v3/files/' + f.id + '?alt=media&key=' + encodeURIComponent(getKey());
-  media.style.display = f.mimeType.startsWith('video/') ? 'block' : 'none';
   $('title').textContent = f.name.replace(/\.[^.]+$/, '');
   document.querySelectorAll('#list li').forEach(li => li.classList.toggle('on', +li.dataset.i === i));
   const on = document.querySelector('#list li.on');
   if (on) on.scrollIntoView({ block: 'nearest' });
   $('hint').textContent = '';
   media.play().catch(() => { $('hint').textContent = 'Toque na tela para começar a tocar.'; armAutoStart(); });
-  if ('mediaSession' in navigator) navigator.mediaSession.metadata = new MediaMetadata({ title: $('title').textContent });
+  if ('mediaSession' in navigator) navigator.mediaSession.metadata = new MediaMetadata({ title: $('title').textContent, artist: (stations[current] || {}).nome || 'Minha Rádio' });
 }
 
 function next() {
@@ -255,23 +260,34 @@ $('next').onclick = next;
 $('prev').onclick = prev;
 $('shuf').onclick = () => { if (files.length) { shuffle(); playCurrent(); } };
 $('play').onclick = () => { if (!files.length) return; media.paused ? media.play() : media.pause(); };
-media.onplay = () => { $('play').textContent = '⏸'; $('hint').textContent = ''; };
-media.onpause = () => $('play').textContent = '▶';
-media.onended = next;
-media.onerror = () => { $('hint').textContent = 'Não consegui tocar este arquivo; indo para o próximo.'; setTimeout(next, 1200); };
-media.ontimeupdate = () => {
-  $('cur').textContent = fmt(media.currentTime);
-  if (media.duration) $('seek').value = (media.currentTime / media.duration) * 100;
-};
-media.onloadedmetadata = () => $('dur').textContent = fmt(media.duration);
+function setState(st) { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = st; }
+
+[aud, vid].forEach(el => {
+  el.volume = VOLUME_INICIAL;
+  el.onplay = () => { if (el !== media) return; $('play').textContent = '⏸'; $('hint').textContent = ''; setState('playing'); };
+  el.onpause = () => { if (el !== media) return; $('play').textContent = '▶'; setState('paused'); };
+  el.onended = () => { if (el === media) next(); };
+  el.onerror = () => {
+    if (el !== media || !el.getAttribute('src')) return;
+    $('hint').textContent = 'Não consegui tocar este arquivo; indo para o próximo.';
+    setTimeout(next, 1200);
+  };
+  el.ontimeupdate = () => {
+    if (el !== media) return;
+    $('cur').textContent = fmt(el.currentTime);
+    if (el.duration) $('seek').value = (el.currentTime / el.duration) * 100;
+  };
+  el.onloadedmetadata = () => { if (el === media) $('dur').textContent = fmt(el.duration); };
+});
 $('seek').oninput = e => { if (media.duration) media.currentTime = (e.target.value / 100) * media.duration; };
-media.volume = VOLUME_INICIAL;
 $('vol').value = VOLUME_INICIAL;
-$('vol').oninput = e => media.volume = e.target.value;
+$('vol').oninput = e => { aud.volume = vid.volume = e.target.value; };
 
 if (AUTO) { buildStations(); loadStation(0); }
 
 if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('play', () => media.play());
+  navigator.mediaSession.setActionHandler('pause', () => media.pause());
   navigator.mediaSession.setActionHandler('nexttrack', next);
   navigator.mediaSession.setActionHandler('previoustrack', prev);
 }
