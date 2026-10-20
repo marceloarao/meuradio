@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Minha Rádio</title>
+<title>Meu Rádio</title>
 <style>
   :root { --bg:#f5f5f7; --card:#fff; --txt:#1d1d1f; --mut:#6e6e73; --acc:#3b6fe0; --bd:#e0e0e5; }
   @media (prefers-color-scheme: dark) {
@@ -42,7 +42,7 @@
 <body>
 <main>
   <div class="card" id="config">
-    <h1>🎵 Minha Rádio</h1>
+    <h1>🎵 Meu Rádio</h1>
     <label for="folder">Link ou ID da pasta do Drive</label>
     <input type="text" id="folder" placeholder="https://drive.google.com/drive/folders/...">
     <label for="key">Chave de API do Google (Drive API v3)</label>
@@ -71,7 +71,7 @@
       <button id="next" title="Próxima">⏭</button>
       <button id="shuf" title="Embaralhar de novo">🔀</button>
     </div>
-    <div class="vol">🔊 <input type="range" id="vol" min="0" max="1" step="0.01" value="0.4"></div>
+    <div class="vol">🔊 <input type="range" id="vol" min="0" max="1" step="0.01" value="0.3"></div>
   </div>
 
   <div class="card">
@@ -86,13 +86,13 @@ const aud = $('aud'), vid = $('vid');
 let media = aud;
 
 // ===== CONFIGURAÇÃO =====
-const VOLUME_INICIAL = 0.35; // 0 a 1 (0.4 = 40%)
+const VOLUME_INICIAL = 0.3; // 0 a 1 (0.4 = 40%)
 const DEFAULT_KEY = 'AIzaSyBvtFzCMVkNlJfW9fxS71fSAXKpijPEa5c';
 // Cada linha é uma estação. A primeira toca ao abrir o app.
 const STATIONS = [
-  { nome: 'Minha Rádio',  pasta: 'https://drive.google.com/drive/folders/1u794n3TRddzlbdVE3KXQVDCdVBwAYsLM?usp=sharing' },
+   { nome: 'Minha Rádio',  pasta: 'https://drive.google.com/drive/folders/1u794n3TRddzlbdVE3KXQVDCdVBwAYsLM?usp=sharing' },
    { nome: 'Instrumental',  pasta: 'https://drive.google.com/drive/folders/1JnljJZNfULpkqFPiHQhHhNGPUwuGWnpC?usp=sharing' },
-  // { nome: 'Clássicas', pasta: 'https://drive.google.com/drive/folders/ID_DA_PASTA_3' },
+   { nome: 'Vídeos', pasta: 'https://drive.google.com/drive/folders/1E4PJtXiF0fZ9_R8UKXm1El6UJ8FTesZb?usp=sharing' },
 ];
 // ========================
 
